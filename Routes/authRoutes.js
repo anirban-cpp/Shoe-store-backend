@@ -34,7 +34,7 @@ authRouter.post("/register", async (req, res) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.status(400);
+      res.status(400).json("User already exists");
       throw new Error("User already exists");
     }
 
@@ -54,7 +54,7 @@ authRouter.post("/register", async (req, res) => {
         _id: user._id,
       });
     } else {
-      res.status(400);
+      res.status(400).json("Invalid User Data");
       throw new Error("Invalid User Data");
     }
   } catch (err) {
