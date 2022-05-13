@@ -18,7 +18,7 @@ authRouter.post("/login", async (req, res) => {
     !validPassword && res.status(400).json("Wrong Password");
 
     res.status(200).json({
-        _id: user._id,
+      _id: user._id,
     });
   } catch (err) {
     res.status(404).json(err);
@@ -68,13 +68,16 @@ authRouter.put("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (user) {
-      if (req.body.password) user.password = req.body.password;
+      if (req.body.password) {
+        //generate new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        user.password = hashedPassword;
+      }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       const updatedUser = await user.save();
-      res.status(200).json({
-        _id: updatedUser._id
-      });
+      res.status(200).json(updatedUser);
     } else {
       res.status(404).json("User not found");
     }
@@ -107,16 +110,16 @@ authRouter.get("/:id", async (req, res) => {
 // get all Users for Admin
 
 authRouter.get("/", async (req, res) => {
-    try {
-        const users = await User.find({});
-        if(users){
-            res.status(200).json(users);
-        } else {
-            res.status(200).json("No users exist");
-        }
-    } catch(err) {
-        res.status(500).json(err);
+  try {
+    const users = await User.find({});
+    if (users) {
+      res.status(200).json(users);
+    } else {
+      res.status(200).json("No users exist");
     }
-})
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 export default authRouter;
