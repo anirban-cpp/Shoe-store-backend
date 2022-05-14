@@ -7,7 +7,7 @@ const productRouter = expressRouter();
 // get paginated products
 
 productRouter.get("/paginated", async (req, res) => {
-  const num_pages = (await Product.count({}) - 12) / 4;
+  const num_pages = ((await Product.count({})) - 12) / 4;
   const pageNo = Number(req.query.page);
   const start_id = 4 * pageNo + 5;
   try {
@@ -144,6 +144,44 @@ productRouter.delete("/:id", async (req, res) => {
     }
   } catch (err) {
     res.send(404).json(err);
+  }
+});
+
+// add product review
+
+productRouter.post("/:id/review", async (req, res) => {
+  try {
+    const { name, userId, rating, comment } = req.body;
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      const alreadyReviewed = product.reviews.find(
+        (r) => r.user.toString() === userId.toString()
+      );
+      if (alreadyReviewed) res.status(400).json("You have already reviewed this product");
+      else {
+        const review = {
+          userName: name,
+          rating: Number(rating),
+          comment,
+          user: userId,
+        };
+        product.reviews.push(review);
+        /*
+        const avg = arr.reduce((acc, item) => {
+          acc += item;
+          return acc;
+        }, 0);
+        if(product.reviews.length > 0)
+          product.rating = (avg / product.reviews.length).toFixed(1);
+        */
+        await product.save();
+        res.status(201).json("Review saved");
+      }
+    } else {
+      res.status(404).json("Product Not Found!");
+    }
+  } catch (e) {
+    res.status(500).json(e);
   }
 });
 
