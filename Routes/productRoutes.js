@@ -4,24 +4,27 @@ import Product from "../Models/ProductModel.js";
 
 const productRouter = expressRouter();
 
-// add all products
+// get paginated products
 
-// productRouter.post("/", async (req, res) => {
-//   let success = true;
-//   for (let i = 0; i < productsData.length; i++) {
-//     const newProduct = new Product(productsData[i]);
-//     try {
-//       await newProduct.save();
-//     } catch (err) {
-//       res.status(500).json(err);
-//       success = false;
-//       break;
-//     }
-//   }
-//   if (success) {
-//     res.status(200).json("Successfully uploaded");
-//   }
-// });
+productRouter.get("/paginated", async (req, res) => {
+  const num_pages = (await Product.count({}) - 12) / 4;
+  const pageNo = Number(req.query.page);
+  const start_id = 4 * pageNo + 5;
+  try {
+    const products =
+      pageNo === 1
+        ? await Product.find({ id: { $gte: 1, $lte: 12 } })
+        : await Product.find({ id: { $gte: start_id, $lte: start_id + 3 } });
+
+    if (products && products.length > 0) {
+      res.status(200).json(products);
+    } else {
+      res.status(404).json("There are no products for that page no");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 // get all products
 
@@ -50,15 +53,15 @@ productRouter.get("/:id", async (req, res) => {
 
 productRouter.get("/", async (req, res) => {
   const keyword = req.query.keyword
-      ? {
-          brand: {
-            $regex: req.query.keyword,
-            $options: "i",
-          },
-        }
-      : {};
+    ? {
+        brand: {
+          $regex: req.query.keyword,
+          $options: "i",
+        },
+      }
+    : {};
 
-    const products = await Product.find({ ...keyword })
+  const products = await Product.find({ ...keyword });
   if (products) {
     res.status(200).json(products);
   } else {
