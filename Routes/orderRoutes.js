@@ -17,8 +17,7 @@ orderRouter.post("/", async (req, res) => {
   } = req.body;
 
   if (orderItems && orderItems.length === 0) {
-    res.status(400);
-    throw new Error("No order items");
+    res.status(400).json("No order items");
   } else {
     const order = new Order({
       orderItems,
@@ -41,13 +40,13 @@ orderRouter.get("/all", async (req, res) => {
   const orders = await Order.find({})
     .sort({ _id: -1 })
     .populate("user", "id name email");
-  res.json(orders);
+  res.status(200).json(orders);
 });
 
 // USER LOGIN ORDERS
 orderRouter.get("/", async (req, res) => {
   const order = await Order.find({ user: req.user._id }).sort({ _id: -1 });
-  res.json(order);
+  res.status(200).json(order);
 });
 
 // GET ORDER BY ID
@@ -58,10 +57,9 @@ orderRouter.get("/:id", async (req, res) => {
   );
 
   if (order) {
-    res.json(order);
+    res.status(200).json(order);
   } else {
-    res.status(404);
-    throw new Error("Order Not Found");
+    res.status(404).json("Order Not Found");
   }
 });
 
@@ -80,10 +78,9 @@ orderRouter.put("/:id/pay", async (req, res) => {
     };
 
     const updatedOrder = await order.save();
-    res.json(updatedOrder);
+    res.status(200).json(updatedOrder);
   } else {
-    res.status(404);
-    throw new Error("Order Not Found");
+    res.status(404).json("Order Not Found");
   }
 });
 
@@ -96,10 +93,9 @@ orderRouter.put("/:id/delivered", async (req, res) => {
     order.deliveredAt = Date.now();
 
     const updatedOrder = await order.save();
-    res.json(updatedOrder);
+    res.status(200).json(updatedOrder);
   } else {
-    res.status(404);
-    throw new Error("Order Not Found");
+    res.status(404).json("Order Not Found");
   }
 });
 

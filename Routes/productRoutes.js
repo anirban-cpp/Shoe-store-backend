@@ -157,7 +157,8 @@ productRouter.post("/:id/review", async (req, res) => {
       const alreadyReviewed = product.reviews.find(
         (r) => r.user.toString() === userId.toString()
       );
-      if (alreadyReviewed) res.status(400).json("You have already reviewed this product");
+      if (alreadyReviewed)
+        res.status(400).json("You have already reviewed this product");
       else {
         const review = {
           userName: name,
@@ -166,14 +167,12 @@ productRouter.post("/:id/review", async (req, res) => {
           user: userId,
         };
         product.reviews.push(review);
-        /*
-        const avg = arr.reduce((acc, item) => {
-          acc += item;
+        const avg = product.reviews.reduce((acc, item) => {
+          acc += item.rating;
           return acc;
         }, 0);
-        if(product.reviews.length > 0)
+        if (product.reviews.length > 0)
           product.rating = (avg / product.reviews.length).toFixed(1);
-        */
         await product.save();
         res.status(201).json("Review saved");
       }
