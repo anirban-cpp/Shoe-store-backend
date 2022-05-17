@@ -7,7 +7,7 @@ const productRouter = expressRouter();
 // get paginated products
 
 productRouter.get("/paginated", async (req, res) => {
-  const num_pages = ((await Product.count({})) - 12) / 4;
+  // const num_pages = ((await Product.count({})) - 12) / 4;
   const pageNo = Number(req.query.page);
   const start_id = 4 * pageNo + 5;
   try {
@@ -44,8 +44,7 @@ productRouter.get("/:id", async (req, res) => {
   if (product) {
     res.status(200).json(product);
   } else {
-    res.status(404);
-    throw new Error("Product not Found");
+    res.status(404).json("Product not Found");
   }
 });
 

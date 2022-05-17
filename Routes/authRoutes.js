@@ -66,7 +66,6 @@ authRouter.post("/register", async (req, res) => {
 
 authRouter.put("/:id", async (req, res) => {
   try {
-    console.log(req.body)
     const user = await User.findById(req.params.id);
     if (user) {
       if (req.body.password) {
