@@ -66,6 +66,7 @@ authRouter.post("/register", async (req, res) => {
 
 authRouter.put("/:id", async (req, res) => {
   try {
+    console.log(req.body)
     const user = await User.findById(req.params.id);
     if (user) {
       if (req.body.password) {
@@ -76,6 +77,7 @@ authRouter.put("/:id", async (req, res) => {
       }
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
+      user.shippingAddress = req.body.shippingAddress || user.shippingAddress;
       const updatedUser = await user.save();
       res.status(200).json(updatedUser);
     } else {
@@ -98,6 +100,7 @@ authRouter.get("/:id", async (req, res) => {
         email: user.email,
         createdAt: user.createdAt,
         isAdmin: user.isAdmin,
+        shippingAddress: user.shippingAddress,
       });
     } else {
       res.status(404).json("User not found");

@@ -9,15 +9,16 @@ const orderSchema = mongoose.Schema(
     },
     orderItems: [
       {
-        name: { type: String, required: true },
-        qty: { type: Number, required: true },
+        brand: { type: String, required: true },
+        quantity: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        product: {
+        id: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,
           ref: "Product",
         },
+        title: { type: String, required: true },
       },
     ],
     shippingAddress: {
@@ -29,7 +30,7 @@ const orderSchema = mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      default: "Paypal",
+      default: "COD",
     },
     paymentResult: {
       id: { type: String },

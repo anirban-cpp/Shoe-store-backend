@@ -7,6 +7,7 @@ const orderRouter = expressRouter();
 
 orderRouter.post("/", async (req, res) => {
   const {
+    userId,
     orderItems,
     shippingAddress,
     paymentMethod,
@@ -21,7 +22,7 @@ orderRouter.post("/", async (req, res) => {
   } else {
     const order = new Order({
       orderItems,
-      user: req.user._id,
+      user: userId,
       shippingAddress,
       paymentMethod,
       itemsPrice,
@@ -29,7 +30,6 @@ orderRouter.post("/", async (req, res) => {
       shippingPrice,
       totalPrice,
     });
-
     const createOrder = await order.save();
     res.status(201).json(createOrder);
   }
@@ -44,9 +44,9 @@ orderRouter.get("/all", async (req, res) => {
 });
 
 // USER LOGIN ORDERS
-orderRouter.get("/", async (req, res) => {
-  const order = await Order.find({ user: req.user._id }).sort({ _id: -1 });
-  res.status(200).json(order);
+orderRouter.get("/user/:id", async (req, res) => {
+  const orders = await Order.find({ user: req.params.id }).sort({ _id: -1 });
+  res.status(200).json(orders);
 });
 
 // GET ORDER BY ID
