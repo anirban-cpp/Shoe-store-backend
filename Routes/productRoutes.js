@@ -40,11 +40,15 @@ productRouter.get("/all", async (req, res) => {
 // get product by id
 
 productRouter.get("/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  if (product) {
-    res.status(200).json(product);
-  } else {
-    res.status(404).json("Product not Found");
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      res.status(200).json(product);
+    } else {
+      res.status(404).json("Product not Found");
+    }
+  } catch(e) {
+    res.status(500).json(e);
   }
 });
 
