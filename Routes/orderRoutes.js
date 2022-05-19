@@ -43,6 +43,32 @@ orderRouter.get("/all", async (req, res) => {
   res.status(200).json(orders);
 });
 
+// GET FILTERED ORDERS
+
+orderRouter.get("/user/:id/filtered", async (req, res) => {
+  try {
+    let orders = [];
+    let sort_order = -1,
+      status = false;
+    if (req.query.order) {
+      sort_order =
+        req.query.order !== "0" ? Number(req.query.order) : sort_order;
+    }
+    if (req.query.status && req.query.status !== "0") {
+      status = req.query.status === "1" ? false : true;
+    }
+
+    orders = await Order.find({ user: req.params.id, isDelivered: status })
+      .sort({ createdAt: sort_order })
+      .populate("user", "id name email");
+
+    if (orders) res.status(200).json(orders);
+    else res.status(404).json("No orders found");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 // USER LOGIN ORDERS
 orderRouter.get("/user/:id", async (req, res) => {
   const orders = await Order.find({ user: req.params.id }).sort({ _id: -1 });
