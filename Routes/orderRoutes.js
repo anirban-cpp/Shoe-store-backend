@@ -1,5 +1,6 @@
 import { Router as expressRouter } from "express";
 import Order from "../Models/OrderModel.js";
+import Product from "../Models/ProductModel.js";
 
 const orderRouter = expressRouter();
 
@@ -20,6 +21,15 @@ orderRouter.post("/", async (req, res) => {
   if (orderItems && orderItems.length === 0) {
     res.status(400).json("No order items");
   } else {
+
+    orderItems.map(async item => {
+      const product = await Product.findById(item.id);
+      if(product){
+        product.countInStock -= item.quantity;
+        await product.save();
+      }
+    })
+    
     const order = new Order({
       orderItems,
       user: userId,
@@ -48,19 +58,58 @@ orderRouter.get("/all", async (req, res) => {
 orderRouter.get("/user/:id/filtered", async (req, res) => {
   try {
     let orders = [];
-    let sort_order = -1,
-      status = false;
+    let sort_order = -1;
+
     if (req.query.order) {
       sort_order =
         req.query.order !== "0" ? Number(req.query.order) : sort_order;
     }
-    if (req.query.status && req.query.status !== "0") {
-      status = req.query.status === "1" ? false : true;
-    }
+    if (req.query.status && req.query.status.trim() != "0") {
+      if (
+        parseInt(req.query.status, 10) >= 1 &&
+        parseInt(req.query.status, 10) <= 3
+      ) {
+        let temporders = await Order.find({ user: req.params.id })
+          .sort({ createdAt: sort_order })
+          .populate("user", "id name email");
 
-    orders = await Order.find({ user: req.params.id, isDelivered: status })
-      .sort({ createdAt: sort_order })
-      .populate("user", "id name email");
+        let total = 0;
+
+        if (Array.isArray(temporders)) {
+          let newOrder;
+          for (const order of temporders) {
+            newOrder = [];
+            for (const item of order.orderItems) {
+              if (
+                item.status.trim().toLowerCase() === "confirmed" &&
+                req.query.status === "1"
+              )
+                newOrder.push(item);
+              else if (
+                item.status.trim().toLowerCase() === "delivered" &&
+                req.query.status === "2"
+              )
+                newOrder.push(item);
+              else if (
+                item.status.trim().toLowerCase() === "cancelled" &&
+                req.query.status === "3"
+              )
+                newOrder.push(item);
+            }
+            order.orderItems = [...newOrder];
+            total += order.orderItems.length;
+          }
+        }
+
+        orders = total === 0 ? [] : [...temporders];
+      } else {
+        res.status(500).json("Invalid status");
+      }
+    } else {
+      orders = await Order.find({ user: req.params.id })
+        .sort({ createdAt: sort_order })
+        .populate("user", "id name email");
+    }
 
     if (orders) res.status(200).json(orders);
     else res.status(404).json("No orders found");
@@ -125,4 +174,29 @@ orderRouter.put("/:id/delivered", async (req, res) => {
   }
 });
 
+// ORDER STATUS CHANGE
+orderRouter.put("/:id/change", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+      const itemId = req.body.itemId;
+      const item = order.orderItems.find((e) => e._id.toString() === itemId);
+
+      if (item) {
+        item.status = req.body.status;
+        if (req.body.status === "Delivered") item.deliveredAt = Date.now();
+        const updateditem = await order.save();
+        res.status(200).json(updateditem);
+      } else res.status(404).json("Not Found");
+    } else {
+      res.status(404).json("Order Not Found");
+    }
+  } catch (e) {
+    res.status(500).json(e);
+  }
+});
+
 export default orderRouter;
+
+//{orderItems: {$elemMatch: {brand: "U.S. Polo Assn."}}}

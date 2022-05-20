@@ -19,6 +19,14 @@ const orderSchema = mongoose.Schema(
           ref: "Product",
         },
         title: { type: String, required: true },
+        status: {
+          type: String,
+          required: true,
+          default: "Confirmed",
+        },
+        deliveredAt: {
+          type: Date,
+        },
       },
     ],
     shippingAddress: {
@@ -59,14 +67,6 @@ const orderSchema = mongoose.Schema(
       default: false,
     },
     paidAt: {
-      type: Date,
-    },
-    isDelivered: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    deliveredAt: {
       type: Date,
     },
   },
