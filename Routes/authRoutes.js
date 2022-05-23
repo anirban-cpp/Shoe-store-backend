@@ -55,7 +55,6 @@ authRouter.post("/register", async (req, res) => {
       });
     } else {
       res.status(400).json("Invalid User Data");
-      throw new Error("Invalid User Data");
     }
   } catch (err) {
     res.status(500).json(err);
